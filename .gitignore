@@ -1,1 +1,2 @@
 *.caffemodel
+caffe-segnet-cudnn5
