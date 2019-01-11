@@ -11,7 +11,7 @@ import time
 
 sys.path.append('/usr/local/lib/python2.7/site-packages')
 # Make sure that caffe is on the python path:
-caffe_root = '/SegNet/caffe-segnet/'
+caffe_root = './caffe-segnet-cudnn5/'
 sys.path.insert(0, caffe_root + 'python')
 import caffe
 
