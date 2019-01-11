@@ -1,2 +1,3 @@
 *.caffemodel
+*.solverstate
 caffe-segnet-cudnn5
