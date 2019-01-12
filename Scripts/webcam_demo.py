@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# coding:utf-8
 import numpy as np
 import matplotlib.pyplot as plt
 import os.path
@@ -33,54 +35,36 @@ output_shape = net.blobs['argmax'].data.shape
 
 label_colours = cv2.imread(args.colours).astype(np.uint8)
 
-cv2.namedWindow("Input")
-cv2.namedWindow("SegNet")
+# cv2.namedWindow("Input")
+# cv2.namedWindow("SegNet")
 
 cap = cv2.VideoCapture(0) # Change this to your webcam ID, or file name for your video file
 
 rval = True
+start = time.time()
 
-while rval:
-	start = time.time()
-	rval, frame = cap.read()
+frame=cv2.imread('/media/hl/新加卷/SemanticSegmentation/SegNet-Tutorial/Scripts/317611_90.jpeg')
+frame = cv2.resize(frame, (input_shape[3],input_shape[2]))
+input_image = frame.transpose((2,0,1))
+# input_image = input_image[(2,1,0),:,:] # May be required, if you do not open your data with opencv
+input_image = np.asarray([input_image])
+out = net.forward_all(data=input_image)
 
-        if rval == False:
-            break
+segmentation_ind = np.squeeze(net.blobs['argmax'].data)
+segmentation_ind_3ch = np.resize(segmentation_ind,(3,input_shape[2],input_shape[3]))
+segmentation_ind_3ch = segmentation_ind_3ch.transpose(1,2,0).astype(np.uint8)
+segmentation_rgb = np.zeros(segmentation_ind_3ch.shape, dtype=np.uint8)
 
-	end = time.time()
-	print '%30s' % 'Grabbed camera frame in ', str((end - start)*1000), 'ms'
+cv2.LUT(segmentation_ind_3ch,label_colours,segmentation_rgb)
+segmentation_rgb = segmentation_rgb.astype(float)/255
 
-	start = time.time()
-	frame = cv2.resize(frame, (input_shape[3],input_shape[2]))
-	input_image = frame.transpose((2,0,1))
-	# input_image = input_image[(2,1,0),:,:] # May be required, if you do not open your data with opencv
-	input_image = np.asarray([input_image])
-	end = time.time()
-	print '%30s' % 'Resized image in ', str((end - start)*1000), 'ms'
+# cv2.imwrite('./Scripts/output.jpeg',segmentation_rgb)
+# cv2.imshow('Input',frame)
+# cv2.imshow('SegNet',segmentation_rgb)
+# cv2.imwrite('./Scripts/output.jpeg',segmentation_rgb)
 
-	start = time.time()
-	out = net.forward_all(data=input_image)
-	end = time.time()
-	print '%30s' % 'Executed SegNet in ', str((end - start)*1000), 'ms'
-
-	start = time.time()
-	segmentation_ind = np.squeeze(net.blobs['argmax'].data)
-	segmentation_ind_3ch = np.resize(segmentation_ind,(3,input_shape[2],input_shape[3]))
-	segmentation_ind_3ch = segmentation_ind_3ch.transpose(1,2,0).astype(np.uint8)
-	segmentation_rgb = np.zeros(segmentation_ind_3ch.shape, dtype=np.uint8)
-
-	cv2.LUT(segmentation_ind_3ch,label_colours,segmentation_rgb)
-	segmentation_rgb = segmentation_rgb.astype(float)/255
-
-	end = time.time()
-	print '%30s' % 'Processed results in ', str((end - start)*1000), 'ms\n'
-
-	cv2.imshow("Input", frame)
-	cv2.imshow("SegNet", segmentation_rgb)
-	
-	key = cv2.waitKey(1)
-	if key == 27: # exit on ESC
-	    break
-cap.release()
-cv2.destroyAllWindows()
-
+# cap.release()
+# cv2.destroyAllWindows()
+plt.imshow(segmentation_rgb)
+plt.savefig('./Scripts/output.jpeg')
+# plt.show()
