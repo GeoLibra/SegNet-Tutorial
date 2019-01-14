@@ -18,27 +18,30 @@ sys.path.insert(0, caffe_root + 'python')
 import caffe
 
 # Import arguments
-parser = argparse.ArgumentParser()
-parser.add_argument('--model', type=str, required=True)
-parser.add_argument('--weights', type=str, required=True)
-parser.add_argument('--colours', type=str, required=True)
-args = parser.parse_args()
+# parser = argparse.ArgumentParser()
+# parser.add_argument('--model', type=str, required=True)
+# parser.add_argument('--weights', type=str, required=True)
+# parser.add_argument('--colours', type=str, required=True)
+# args = parser.parse_args()
 
-net = caffe.Net(args.model,
-                args.weights,
-                caffe.TEST)
-
+# net = caffe.Net(args.model,
+#                 args.weights,
+#                 caffe.TEST)
+deploy='./Example_Models/segnet_model_driving_webdemo.prototxt'
+weights='./Models/SegNetModel/segnet_weights_driving_webdemo.caffemodel'
+colours='./Scripts/camvid12.png'
+net=caffe.Net(deploy,weights,caffe.TEST)
 caffe.set_mode_gpu()
 
 input_shape = net.blobs['data'].data.shape
 output_shape = net.blobs['argmax'].data.shape
 
-label_colours = cv2.imread(args.colours).astype(np.uint8)
+label_colours = cv2.imread(colours).astype(np.uint8)
 
-# cv2.namedWindow("Input")
-# cv2.namedWindow("SegNet")
+                                             
+cv2.namedWindow("Input")
+cv2.namedWindow("SegNet")
 
-cap = cv2.VideoCapture(0) # Change this to your webcam ID, or file name for your video file
 
 rval = True
 start = time.time()
@@ -58,13 +61,12 @@ segmentation_rgb = np.zeros(segmentation_ind_3ch.shape, dtype=np.uint8)
 cv2.LUT(segmentation_ind_3ch,label_colours,segmentation_rgb)
 segmentation_rgb = segmentation_rgb.astype(float)/255
 
-# cv2.imwrite('./Scripts/output.jpeg',segmentation_rgb)
-# cv2.imshow('Input',frame)
-# cv2.imshow('SegNet',segmentation_rgb)
-# cv2.imwrite('./Scripts/output.jpeg',segmentation_rgb)
-
-# cap.release()
-# cv2.destroyAllWindows()
-plt.imshow(segmentation_rgb)
-plt.savefig('./Scripts/output.jpeg')
+cv2.imwrite('./Scripts/output.jpeg',segmentation_rgb)
+cv2.imshow('Input',frame)
+cv2.imshow('SegNet',segmentation_rgb)
+cv2.imwrite('./Scripts/output.jpeg',segmentation_rgb)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
+# plt.imshow(segmentation_rgb)
+# plt.savefig('./Scripts/output.jpeg')
 # plt.show()
