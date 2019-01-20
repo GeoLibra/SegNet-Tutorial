@@ -60,6 +60,10 @@ for i in range(0, args.iter):
 	Unlabelled = [0,0,0]
 
 	label_colours = np.array([Sky, Building, Pole, Road, Pavement, Tree, SignSymbol, Fence, Car, Pedestrian, Bicyclist, Unlabelled])
+	# for 12 classes(prediction)
+  # label_colours2 = np.array([Sky, Building, Pole, Road_marking, Road, Pavement, 
+  #                             Tree, SignSymbol, Fence, Car, Pedestrian, 
+  #                             Bicyclist, Unlabelled])
 	for l in range(0,11):
 		r[ind==l] = label_colours[l,0]
 		g[ind==l] = label_colours[l,1]
