@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-# coding:utf-8
 import numpy as np
 import os.path
 import scipy
@@ -15,10 +13,11 @@ from PIL import Image
 from pymongo import MongoClient
 from progressbar import ProgressBar
 import multiprocessing
+import matplotlib.pyplot as plt
 
-sys.path.append('/usr/local/lib/python2.7/site-packages')
+sys.path.append('/home/hl/.local/lib/python3.6/site-packages')
 # Make sure that caffe is on the python path:
-caffe_root = './caffe-segnet-cudnn5/'
+caffe_root = './caffe-segnet-cudnn5-py3/'
 sys.path.insert(0, caffe_root + 'python')
 import caffe
 client = MongoClient('127.0.0.1', 27017)
@@ -68,17 +67,15 @@ def getClassArea(pic,pic_id):
 				result[className]+=1
 			else:
 				result[className]=1
-	cursor = db.sv.insert(result)
+	print(result)
 
-def segPicture(input_pic):
+def segPicture(input_pic,output_pic):
 	deploy='./Example_Models/segnet_model_driving_webdemo.prototxt'
 	weights='./Models/SegNetModel/segnet_weights_driving_webdemo.caffemodel'
 	colours='./Scripts/camvid12.png'
 	caffe.set_mode_gpu()
 	net=caffe.Net(deploy,weights,caffe.TEST)
 	filename = os.path.basename(input_pic)
-	result='/media/hl/mydata/segm2/'
-	output_pic=result+filename
 	pic_id=filename.split('.')[0]
 	input_shape = net.blobs['data'].data.shape
 	output_shape = net.blobs['argmax'].data.shape
@@ -108,41 +105,12 @@ def segPicture(input_pic):
 	# output = np.transpose(segmentation_rgb, (2,0,1))
 	output = segmentation_rgb[:,:,(2,1,0)]
 	getClassArea(output,pic_id)
+	plt.imshow(segmentation_rgb)
+	plt.savefig(output_pic)
 	# segmentation_rgb = segmentation_rgb.astype(float)/255
 	# output_pic='/media/hl/mydata/segm2/'+filename
 	# cv2.imwrite(output_pic,segmentation_rgb)
 
-
-# segPicture('/media/hl/mydata/SemanticSegmentation/SegNet-Tutorial/Scripts/v2.png',
-# '/media/hl/mydata/SemanticSegmentation/SegNet-Tutorial/Scripts/v2_mask.png')
-
-
-def m(files):
-	result='/media/hl/mydata/segm2'
-	progress=ProgressBar()
-	for name in progress(files):
-		input_pic=join(root,name)
-		segPicture(input_pic,join(result,name))
-
 if __name__=="__main__":
-	path='/media/hl/mydata/photos'
-	
-	full_list=[]
-	for root,dirs,filenames in os.walk(path):
-			for name in filenames:
-					full_list.append(join(root,name))
-	# n_total=len(full_list)
-	# n_processes=3
-	# length=n_total/n_processes
-	# indices=[int(round(i*length)) for i in range(n_processes+1)]
-	# # 生成每个进程要处理的子文件列表
-	# sublists=[full_list[indices[i]:indices[i+1]] for i in range(n_processes)]
-	# # 生成进程
-	# processes=[Process(target=m,args=(x,)) for x in sublists]
-	# 并行处理
-	pool_size=multiprocessing.cpu_count()*2
-	pool_size=8
-	pool=multiprocessing.Pool(processes=pool_size,)
-	pool_outputs=pool.map(segPicture,full_list)
-	pool.close()
-	pool.join()
+	segPicture('/media/hl/mydata/SemanticSegmentation/SegNet-Tutorial/Scripts/v2.png','/media/hl/mydata/SemanticSegmentation/SegNet-Tutorial/Scripts/v2_mask.png')
+
